@@ -200,4 +200,11 @@ def add_result():
 def download_excel():
     file_path = "lab_results.xlsx"
     if os.path.exists(file_path):
-        return send_file(file_path,
+        return send_file(file_path, as_attachment=True)
+    else:
+        return "الملف غير موجود بعد. الرجاء إدخال بيانات أولاً.", 404
+
+# ✅ تشغيل التطبيق باستخدام المنفذ الصحيح
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
