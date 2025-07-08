@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect
 from fpdf import FPDF
 from bidi.algorithm import get_display
 import arabic_reshaper
@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# 🧪 قائمة التحاليل والرينجات الطبيعية
+# 🧪 قائمة التحاليل
 plus_range = "None / + / ++ / +++"
 tests = {
     "BLOOD GROUP": "Depends on type",
@@ -55,7 +55,7 @@ tests = {
     "Bacteria": plus_range
 }
 
-# ✅ تحميل البيانات من Excel إذا كان موجودًا
+# ✅ تحميل البيانات من Excel
 data = []
 if os.path.exists("lab_results.xlsx"):
     data = pd.read_excel("lab_results.xlsx").to_dict(orient='records')
@@ -63,6 +63,7 @@ if os.path.exists("lab_results.xlsx"):
 def reshape(text):
     return get_display(arabic_reshaper.reshape(str(text)))
 
+# ✅ نموذج PDF
 class LabPDF(FPDF):
     def __init__(self, patient):
         super().__init__()
@@ -76,7 +77,6 @@ class LabPDF(FPDF):
         except:
             pass
         self.ln(40)
-        self.set_font("Amiri", size=13)
         self.cell(0, 30, text=reshape("تقرير التحاليل المرضية"), ln=True, align='C')
         self.ln(5)
         self.set_font("Amiri", size=11)
@@ -108,7 +108,7 @@ def generate_pdf(patient, results):
 
     col_width = 60
     line_height = 10
-    margin_bottom = 30  # المسافة المحجوزة للتذييل
+    margin_bottom = 30
 
     def draw_table_header():
         pdf.set_fill_color(200, 220, 255)
@@ -125,7 +125,6 @@ def generate_pdf(patient, results):
         result_text = reshape(result)
         normal_text = reshape(tests[test])
 
-        # حساب ارتفاع السطر
         def get_cell_height(text):
             temp = FPDF()
             temp.add_page()
@@ -140,12 +139,10 @@ def generate_pdf(patient, results):
         h_normal = get_cell_height(normal_text)
         max_height = max(h_test, h_result, h_normal)
 
-        # التحقق من المساحة المتبقية في الصفحة
         if pdf.get_y() + max_height + margin_bottom > pdf.h:
             pdf.add_page()
             draw_table_header()
 
-        # رسم الخلايا الثلاثة
         x_start = pdf.get_x()
         y_start = pdf.get_y()
 
@@ -162,67 +159,45 @@ def generate_pdf(patient, results):
 
         pdf.set_y(y_start + max_height)
 
-    # حفظ الملف في الذاكرة
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
 
-@app.route('/', methods=['GET', 'POST'])
+# ✅ المسارات
+
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        patient = {
-            'name': request.form['name'],
-            'age': request.form['age'],
-            'phone': request.form['phone'],
-            'date': datetime.now().strftime('%Y-%m-%d')
-        }
-        selected_tests = request.form.getlist('tests')
-        return render_template('results.html', patient=patient, selected_tests=selected_tests, tests=tests)
-    return render_template('index.html', tests=tests)
+    return render_template('form.html')
 
-@app.route('/generate', methods=['POST'])
-def generate():
-    patient = {
-        'name': request.form['name'],
-        'age': request.form['age'],
-        'phone': request.form['phone'],
-        'date': request.form['date']
-    }
-    results = {key: request.form[key] for key in request.form if key not in ['name', 'age', 'phone', 'date']}
-    record = {**patient, **results}
-    data.append(record)
-    df = pd.DataFrame(data)
-    df.to_excel("lab_results.xlsx", index=False)
-    pdf_buffer = generate_pdf(patient, results)
-    filename = secure_filename(f"{patient['name']}_report.pdf")
-    return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+@app.route('/add-result', methods=['POST'])
+def add_result():
+    name = request.form['name']
+    test = request.form['test']
+    result = request.form['result']
+    date = datetime.now().strftime('%Y-%m-%d')
 
-@app.route('/search', methods=['GET', 'POST'])
-def search():
-    if request.method == 'POST':
-        name = request.form['search_name'].strip().lower()
-        results_found = [d for d in data if d['name'].strip().lower() == name]
-        if not results_found:
-            return render_template('search.html', not_found=True)
-        result = results_found[-1]
-        return render_template('search.html', result=result)
-    return render_template('search.html')
+    file_path = 'lab_results.xlsx'
 
-@app.route('/print_report', methods=['POST'])
-def print_report():
-    patient = {
-        'name': request.form['name'],
-        'age': request.form['age'],
-        'phone': request.form['phone'],
-        'date': request.form['date']
-    }
-    results = {key: request.form[key] for key in request.form if key not in ['name', 'age', 'phone', 'date']}
-    pdf_buffer = generate_pdf(patient, results)
-    filename = secure_filename(f"{patient['name']}_report.pdf")
-    return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+    if os.path.exists(file_path):
+        df = pd.read_excel(file_path)
+    else:
+        df = pd.DataFrame(columns=['Patient Name', 'Test Name', 'Result', 'Date'])
 
-# ✅ تشغيل التطبيق
-if __name__ == '__main__':
-   app.run(host='0.0.0.0', port=5000, debug=True)
+    new_row = pd.DataFrame([{
+        'Patient Name': name,
+        'Test Name': test,
+        'Result': result,
+        'Date': date
+    }])
 
+    df = pd.concat([df, new_row], ignore_index=True)
+    df.to_excel(file_path, index=False)
+
+    return redirect('/')
+
+@app.route('/download')
+def download_excel():
+    file_path = "lab_results.xlsx"
+    if os.path.exists(file_path):
+        return send_file(file_path,
