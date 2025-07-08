@@ -1,4 +1,0 @@
-pip install flask fpdf2 arabic_reshaper python-bidi pandas
-
-
-python app.py
