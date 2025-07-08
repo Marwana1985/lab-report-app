@@ -82,14 +82,8 @@ class LabPDF(FPDF):
         self.set_font("Amiri", size=11)
         self.multi_cell(0, 40, text=reshape(
             f"الاسم: {self.patient['name']}   العمر: {self.patient['age']}   الهاتف: {self.patient['phone']}   التاريخ: {self.patient['date']}"
-        ))
-        self.ln(5)
-        self.set_fill_color(200, 220, 255)
-        self.cell(60, 10, text=reshape("التحليل"), border=1, align='C', fill=True)
-        self.cell(60, 10, text=reshape("النتيجة"), border=1, align='C', fill=True)
-        self.cell(60, 10, text=reshape("القيمة الطبيعية"), border=1, align='C', fill=True)
-        self.ln()
-
+     
+       
     def footer(self):
         self.set_y(-30)
         try:
