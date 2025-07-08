@@ -195,7 +195,7 @@ def generate():
     df = pd.DataFrame(data)
     df.to_excel("lab_results.xlsx", index=False)
     pdf_buffer = generate_pdf(patient, results)
-    filename = secure_filename(f"{patient['name']}_report.pdf")
+    filename = f"{patient['name']}_report.pdf"
     return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 @app.route('/search', methods=['GET', 'POST'])
