@@ -217,13 +217,19 @@ def print_report():
     filename = secure_filename(f"{patient['name']}_report.pdf")
     return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
-@app.route('/download')
+@app.route('/download', methods=['GET', 'POST'])
 def download_excel():
-    file_path = "lab_results.xlsx"
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=True)
-    else:
-        return "الملف غير موجود بعد. الرجاء إدخال بيانات أولاً.", 404
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == '1985':
+            file_path = "lab_results.xlsx"
+            if os.path.exists(file_path):
+                return send_file(file_path, as_attachment=True)
+            else:
+                return "الملف غير موجود بعد. الرجاء إدخال بيانات أولاً.", 404
+        else:
+            return render_template('download.html', error=True)
+    return render_template('download.html')
 
 # ✅ تشغيل التطبيق باستخدام المنفذ الصحيح
 if __name__ == '__main__':
