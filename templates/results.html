@@ -32,9 +32,10 @@
         <input type="hidden" name="name" value="{{ patient.name }}">
         <input type="hidden" name="age" value="{{ patient.age }}">
         <input type="hidden" name="phone" value="{{ patient.phone }}">
+		<input type="hidden" name="dr" value="{{ patient.dr }}">
         <input type="hidden" name="date" value="{{ patient.date }}">
 
-        <p><strong>الاسم:</strong> {{ patient.name }} | <strong>العمر:</strong> {{ patient.age }} | <strong>الهاتف:</strong> {{ patient.phone }} | <strong>التاريخ:</strong> {{ patient.date }}</p>
+        <p><strong>الاسم:</strong> {{ patient.name }} | <strong>العمر:</strong> {{ patient.age }}| <strong>اسم الطبيب:</strong> {{ patient.dr }} | <strong>الهاتف:</strong> {{ patient.phone }} | <strong>التاريخ:</strong> {{ patient.date }}</p>
 
         {% for test in selected_tests %}
             <div class="test-row">
@@ -46,5 +47,7 @@
 
         <button class="submit-btn" type="submit">📄 توليد التقرير</button>
     </form>
+	<a href="/download">📥 تحميل ملف النتائج (Excel)</a>
+
 </body>
 </html>
