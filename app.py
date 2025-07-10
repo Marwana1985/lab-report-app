@@ -81,11 +81,9 @@ class LabPDF(FPDF):
         self.ln(5)
         self.set_font("Amiri", size=11)
         self.multi_cell(0, 40, text=reshape(
-<<<<<<< HEAD
+
             f"الاسم: {self.patient['name']}     العمر: {self.patient['age']}    الهاتف: {self.patient['phone']}    اسم الطبيب:  {self.patient['dr']}    التاريخ: {self.patient['date']}"
-=======
-            f"الاسم: {self.patient['name']}   العمر: {self.patient['age']}   الهاتف: {self.patient['phone']} لسم الطبيب: {self.patient['dr']}  التاريخ: {self.patient['date']}"
->>>>>>> 9b5940f (Initial commit)
+
         )) 
         self.ln(5)
        
@@ -190,11 +188,9 @@ def generate():
         'dr': request.form['dr'],
         'date': request.form['date']
     }
-<<<<<<< HEAD
-    results = {key: request.form[key] for key in request.form if key not in ['name', 'age', 'phone', 'dr', 'date']}
-=======
+
     results = {key: request.form[key] for key in request.form if key not in ['name', 'age', 'phone' , 'dr' , 'date']}
->>>>>>> 9b5940f (Initial commit)
+
     record = {**patient, **results}
     data.append(record)
     df = pd.DataFrame(data)
@@ -223,10 +219,10 @@ def print_report():
         'dr': request.form['dr'],
         'date': request.form['date']
     }
-<<<<<<< HEAD
+
     results = {key: request.form[key] for key in request.form if key not in ['name', 'age', 'phone','dr', 'date']}
-=======
-  >>>>>>> 9b5940f (Initial commit)
+
+
     pdf_buffer = generate_pdf(patient, results)
     filename = secure_filename(f"{patient['name']}_report.pdf")
     return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
@@ -244,10 +240,7 @@ def download_excel():
         else:
             return render_template('download.html', error=True)
     return render_template('download.html')
-<<<<<<< HEAD
-=======
 
->>>>>>> 9b5940f (Initial commit)
 
 # ✅ تشغيل التطبيق باستخدام المنفذ الصحيح
 if __name__ == '__main__':
